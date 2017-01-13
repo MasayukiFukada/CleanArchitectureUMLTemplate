@@ -1,0 +1,197 @@
+@startuml
+
+/'
+
+ ######  ##    ## #### ##    ##
+##    ## ##   ##   ##  ###   ##
+##       ##  ##    ##  ####  ##
+ ######  #####     ##  ## ## ##
+      ## ##  ##    ##  ##  ####
+##    ## ##   ##   ##  ##   ###
+ ######  ##    ## #### ##    ##
+
+'/
+
+skinparam class {
+  BackgroundColor<<External>> #bbddff
+  BackgroundColor<<Gateway>> #bbffbb
+  BackgroundColor<<Usecase>> #ffbbbb
+  BackgroundColor<<Entity>> #ffffbb
+}
+
+/'
+
+######## ##     ## ######## ######## ########  ##    ##    ###    ##
+##        ##   ##     ##    ##       ##     ## ###   ##   ## ##   ##
+##         ## ##      ##    ##       ##     ## ####  ##  ##   ##  ##
+######      ###       ##    ######   ########  ## ## ## ##     ## ##
+##         ## ##      ##    ##       ##   ##   ##  #### ######### ##
+##        ##   ##     ##    ##       ##    ##  ##   ### ##     ## ##
+######## ##     ##    ##    ######## ##     ## ##    ## ##     ## ########
+
+'/
+
+class DB <<External>> {
+  +データの取得() : DBModel
+  +データの保存(DBModel)
+}
+
+class View <<External>> {
+  +画面の更新(ViewModel)
+}
+
+DB -right[hidden]- View
+
+/'
+
+  ######      ###    ######## ######## ##      ##    ###    ##    ##
+ ##    ##    ## ##      ##    ##       ##  ##  ##   ## ##    ##  ##
+ ##         ##   ##     ##    ##       ##  ##  ##  ##   ##    ####
+ ##   #### ##     ##    ##    ######   ##  ##  ## ##     ##    ##
+ ##    ##  #########    ##    ##       ##  ##  ## #########    ##
+ ##    ##  ##     ##    ##    ##       ##  ##  ## ##     ##    ##
+  ######   ##     ##    ##    ########  ###  ###  ##     ##    ##
+
+'/
+
+interface DBAccess <<Gateway>> {
+  +データの取得() : DBModel
+  +データの保存(DBModel)
+}
+
+class DBGateway <<Gateway>> {
+  +データの取得() : DBModel
+  +データの保存(DBModel)
+  +DBからデータを取得() : Data
+  +DBにデータを保存(Data) : Boolean
+  -モデルの変換(Data) : DBModel
+  -モデルの変換(DBModel) : Data
+}
+
+interface ViewController <<Gateway>> {
+  +データの取得() : Data
+}
+
+interface ViewPresenter <<Gateway>> {
+  +画面の更新(ViewModel)
+}
+
+class ViewAction <<Gateway>> {
+  +データの取得() : Data
+  +画面の更新(ViewModel)
+  -モデルの変換(Data) : ViewModel
+  -モデルの変換(ViewModel) : Data
+}
+
+class DBModel <<Gateway>> <<(M, #99ccff)>> {
+}
+
+class ViewModel <<Gateway>> <<(M, #99ccff)>> {
+}
+
+DBModel -right[hidden]- DBAccess
+DBAccess -right- DBGateway
+DBGateway -right[hidden]- ViewPresenter
+ViewPresenter -right- ViewAction
+ViewAction -right- ViewController
+ViewController -right[hidden]- ViewModel
+
+View -down[hidden]- ViewAction
+DB -down[hidden]- DBGateway
+
+/'
+
+##     ##  ######  ########  ######     ###     ######  ########
+##     ## ##    ## ##       ##    ##   ## ##   ##    ## ##
+##     ## ##       ##       ##        ##   ##  ##       ##
+##     ##  ######  ######   ##       ##     ##  ######  ######
+##     ##       ## ##       ##       #########       ## ##
+##     ## ##    ## ##       ##    ## ##     ## ##    ## ##
+ #######   ######  ########  ######  ##     ##  ######  ########
+
+'/
+
+interface InputUsecase <<Usecase>> {
+  +データを取得する() : Data
+}
+
+interface OutputUsecase <<Usecase>> {
+  +DBからデータを取得() : Data
+  +DBにデータを保存(Data) : Boolean
+}
+
+class Usecase <<Usecase>> {
+  +データを取得する() : Data
+  +DBからデータを取得() : Data
+  +DBにデータを保存(Data) : Boolean
+}
+
+DBGateway -down[hidden]- Usecase
+ViewAction -down[hidden]- Usecase
+
+OutputUsecase -right- Usecase
+Usecase -right- InputUsecase
+
+/'
+
+######## ##    ## ######## #### ######## ##    ##
+##       ###   ##    ##     ##     ##     ##  ##
+##       ####  ##    ##     ##     ##      ####
+######   ## ## ##    ##     ##     ##       ##
+##       ##  ####    ##     ##     ##       ##
+##       ##   ###    ##     ##     ##       ##
+######## ##    ##    ##    ####    ##       ##
+
+'/
+
+interface DataManage <<Entity>> {
+}
+
+class DataEntity <<Entity>> {
+}
+
+class DataModel <<Entity>> <<(M, #99ccff)>> {
+}
+
+Usecase -down[hidden]- DataEntity
+
+DataEntity -right- DataManage
+DataModel -left-* DataEntity
+
+/'
+
+  ######   #######  ##    ## ##    ## ########  ######  ########
+ ##    ## ##     ## ###   ## ###   ## ##       ##    ##    ##
+ ##       ##     ## ####  ## ####  ## ##       ##          ##
+ ##       ##     ## ## ## ## ## ## ## ######   ##          ##
+ ##       ##     ## ##  #### ##  #### ##       ##          ##
+ ##    ## ##     ## ##   ### ##   ### ##       ##    ##    ##
+  ######   #######  ##    ## ##    ## ########  ######     ##
+
+'/
+
+DB ..|> DBAccess
+View --> ViewController
+View ..|> ViewPresenter
+
+DBGateway ..|> OutputUsecase
+ViewAction --> InputUsecase
+
+Usecase --> DataManage
+
+/'
+
+##    ##  #######  ######## ########
+###   ## ##     ##    ##    ##
+####  ## ##     ##    ##    ##
+## ## ## ##     ##    ##    ######
+##  #### ##     ##    ##    ##
+##   ### ##     ##    ##    ##
+##    ##  #######     ##    ########
+
+'/
+
+note "下位レイヤーは上位レイヤーのことを知らない\nつまり、上位レイヤーの処理を呼び出せない" as N1
+note "上位レイヤー側の処理を行いたい場合は\nインターフェースを用意して\n上位レイヤーに処理を委譲する" as N2
+
+@enduml
