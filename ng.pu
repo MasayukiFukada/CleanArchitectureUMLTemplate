@@ -1,0 +1,24 @@
+@startuml
+
+skinparam class {
+  BackgroundColor<<External>> #bbddff
+  BackgroundColor<<Gateway>> #bbffbb
+  BackgroundColor<<Usecase>> #ffbbbb
+  BackgroundColor<<Entity>> #ffffbb
+}
+
+class 外側のクラス <<Gateway>> {
+  ○○リストを取得する処理()
+}
+
+class 内側のクラス <<Usecase>> {
+  object : 外側のクラス
+  object経由で「○○リストを取得する処理()」を使う処理()
+}
+
+note "ダメな例\n* 内側が外側のクラス名を知っている\n    - つまり、外側の実装に依存している\n* 名前が固定されるのでテストを書く際、外側の実装も必要になる\n    - しかも毎回同じ値を返すとは限らない\n    - テスト結果が不安定" as N1
+
+外側のクラス -down- 内側のクラス
+内側のクラス ..right N1
+
+@enduml

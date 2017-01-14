@@ -1,0 +1,34 @@
+@startuml
+
+skinparam class {
+  BackgroundColor<<External>> #bbddff
+  BackgroundColor<<Gateway>> #bbffbb
+  BackgroundColor<<Usecase>> #ffbbbb
+  BackgroundColor<<Entity>> #ffffbb
+}
+
+class 固定データを返すテスト用のクラス <<Gateway>> {
+  ○○リストが取得出来る処理()
+}
+
+class 外側のクラス <<Gateway>> {
+  ○○リストが取得出来る処理()
+}
+
+interface 内側で行いたい処理のインターフェース <<Usecase>>{
+  ○○リストが取得出来る処理()
+}
+
+class 内側のクラス <<Usecase>> {
+  object : 内側で行いたい処理のインターフェース
+  objectに参照先をセットする処理()
+  object経由で「○○リストが取得出来る処理()」を使う処理()
+}
+note right : 良い例\n* インターフェースに依存\n    - 外側の実装に依存しない\n    - 処理を呼ぶことが出来ればどんな実装でも良い\n* テスト用クラスをセットすればテストが可能\n    - 毎回同じデータが返ってくることが保証される\n    - テスト結果が安定
+
+
+固定データを返すテスト用のクラス .down.|> 内側で行いたい処理のインターフェース
+外側のクラス .down.|> 内側で行いたい処理のインターフェース
+内側で行いたい処理のインターフェース -down- 内側のクラス
+
+@enduml
